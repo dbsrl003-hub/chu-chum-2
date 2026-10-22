@@ -122,6 +122,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s ease;
+      flex-shrink: 0;
     }
     .btn-danger:hover {
       background: #fca5a5;
@@ -171,7 +172,7 @@
 <body>
 
   <!-- ==================== 1. 설정 화면 (SETUP VIEW) ==================== -->
-  <div id="view-setup" class="view-container active" style="max-width: 1080px; margin: 0 auto; padding: 36px 20px 80px;">
+  <div id="view-setup" class="view-container active" style="max-width: 1200px; margin: 0 auto; padding: 36px 20px 80px;">
     <div style="text-align: center; margin-bottom: 36px;">
       <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(201, 147, 45, 0.12); border-radius: var(--radius-full); border: 1px solid var(--gold-border); margin-bottom: 14px;">
         <span style="font-size: 15px;">✨</span>
@@ -187,7 +188,11 @@
       </p>
     </div>
 
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+    <!-- 설정 화면 그리드: 우측 경품 목록 영역을 더 넓게 설정 (1fr : 1.35fr) -->
+    <div style="display: grid; grid-template-columns: 1fr 1.35fr; gap: 24px; align-items: start;">
+      @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+      }
       <!-- 좌측: 번호 범위 설정 -->
       <div class="glass-panel" style="padding: 28px;">
         <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
@@ -248,13 +253,13 @@
         <div style="display: flex; gap: 10px; margin-bottom: 18px;">
           <input type="text" id="input-new-prize-name" placeholder="새 경품 이름 (예: 한우 세트)" style="flex: 1; background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px; color: var(--text-main); font-size: 14px; outline: none;" />
           <input type="number" id="input-new-prize-qty" value="1" min="1" style="width: 75px; background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 12px; color: var(--text-main); font-size: 14px; font-weight: 700; text-align: center; outline: none;" />
-          <button id="btn-add-prize" class="btn-gold-primary" style="padding: 10px 16px; border-radius: var(--radius-md); font-size: 14px;">
+          <button id="btn-add-prize" class="btn-gold-primary" style="padding: 10px 16px; border-radius: var(--radius-md); font-size: 14px; flex-shrink: 0;">
             + 추가
           </button>
         </div>
 
         <!-- 경품 리스트 -->
-        <div id="list-prizes" style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+        <div id="list-prizes" style="max-height: 280px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; padding-right: 4px;">
         </div>
 
         <div id="alert-qty-invalid" style="display: none; padding: 12px; border-radius: var(--radius-md); background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); color: #b91c1c; font-size: 13px;">
@@ -943,23 +948,24 @@
       listContainer.innerHTML = '';
       appState.prizes.forEach((p, idx) => {
         const item = document.createElement('div');
-        item.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#ffffff; border:1px solid var(--border-card); border-radius:var(--radius-md); box-shadow:0 1px 3px rgba(0,0,0,0.02);';
+        // flex 레이아웃 수정: 항목들이 줄바꿈 없이 한 줄에 안정적으로 고정되도록 설정
+        item.style.cssText = 'display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; background:#ffffff; border:1px solid var(--border-card); border-radius:var(--radius-md); box-shadow:0 1px 3px rgba(0,0,0,0.02);';
 
         const isCompleted = p.drawnCount >= p.quantity;
         item.innerHTML = `
-          <div style="display:flex; align-items:center; gap:10px;">
-            <span style="width:24px; height:24px; border-radius:6px; background:rgba(201, 147, 45, 0.15); color:var(--gold-dark); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">
+          <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+            <span style="flex-shrink:0; width:24px; height:24px; border-radius:6px; background:rgba(201, 147, 45, 0.15); color:var(--gold-dark); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">
               ${idx + 1}
             </span>
-            <div>
-              <span style="font-size:15px; font-weight:600; color:var(--text-main);">${p.name}</span>
-              ${p.drawnCount > 0 ? `<span style="font-size:12px; color:${isCompleted ? '#16a34a' : 'var(--gold-dark)'}; margin-left:8px; font-weight:600;">(${p.drawnCount}/${p.quantity} 추첨됨)</span>` : ''}
+            <div style="flex:1; min-width:0; overflow:hidden;">
+              <div style="font-size:14px; font-weight:600; color:var(--text-main); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${p.name}">${p.name}</div>
+              ${p.drawnCount > 0 ? `<div style="font-size:11px; color:${isCompleted ? '#16a34a' : 'var(--gold-dark)'}; font-weight:600;">(${p.drawnCount}/${p.quantity} 추첨됨)</div>` : ''}
             </div>
           </div>
-          <div style="display:flex; align-items:center; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
             <span style="font-size:12px; color:var(--text-muted);">수량:</span>
-            <input type="number" min="1" value="${p.quantity}" data-prize-id="${p.id}" class="input-prize-qty" style="width:56px; background:#f9f8f6; border:1px solid var(--border-subtle); border-radius:6px; padding:4px 6px; color:var(--text-main); font-size:14px; font-weight:700; text-align:center; outline:none;" />
-            <button data-draw-prize-id="${p.id}" class="btn-gold-primary" style="padding:6px 12px; font-size:12px; border-radius:6px;" title="이 경품만 따로 추첨">
+            <input type="number" min="1" value="${p.quantity}" data-prize-id="${p.id}" class="input-prize-qty" style="width:52px; background:#f9f8f6; border:1px solid var(--border-subtle); border-radius:6px; padding:4px 4px; color:var(--text-main); font-size:13px; font-weight:700; text-align:center; outline:none;" />
+            <button data-draw-prize-id="${p.id}" class="btn-gold-primary" style="padding:6px 10px; font-size:12px; border-radius:6px; flex-shrink:0;" title="이 경품만 따로 추첨">
               ▶ 추첨
             </button>
             <button data-delete-prize-id="${p.id}" class="btn-danger" title="삭제">
