@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D 골드 캡슐머신 경품 추첨</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23deb043%22/><text y=%2258%22 x=%2250%22 text-anchor=%22middle%22 font-size=%2240%22 font-weight=%22bold%22 fill=%22%23fff%22>🎁</text></svg>" />
+  <!-- Pretendard Font -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <!-- Three.js (r128) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.4/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      /* 화사하고 밝은 샴페인 골드 & 에디토리얼 테마 */
+      --bg-primary: #f5f4ef;
+      --bg-card: #ffffff;
+      --gold-primary: #c9932d;
+      --gold-light: #e6b74e;
+      --gold-dark: #8c6317;
+      --gold-border: rgba(201, 147, 45, 0.4);
+      --text-main: #212126;
+      --text-muted: #6e6e78;
+      --border-subtle: #e4e3dc;
+      --border-card: #dedcd3;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-full: 9999px;
+      --font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-family);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 10%, rgba(201, 147, 45, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 85% 85%, rgba(107, 70, 184, 0.05) 0%, transparent 45%),
+        radial-gradient(circle at 15% 85%, rgba(84, 34, 42, 0.06) 0%, transparent 45%);
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-card);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .btn-gold-primary {
+      background: linear-gradient(135deg, #e6b74e 0%, #c9932d 100%);
+      color: #ffffff;
+      font-weight: 700;
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 13px 26px;
+      font-size: 15px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(201, 147, 45, 0.35);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    }
+    .btn-gold-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(201, 147, 45, 0.5);
+      background: linear-gradient(135deg, #f0c35e 0%, #d69f37 100%);
+    }
+    .btn-gold-primary:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    .btn-gold-primary:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 11px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+    }
+    .btn-secondary:hover:not(:disabled) {
+      background: #f7f6f2;
+      border-color: #cbcaa8;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      border-radius: var(--radius-sm);
+      padding: 6px 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-danger:hover {
+      background: #fca5a5;
+    }
+
+    .btn-warning {
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fed7aa;
+      border-radius: var(--radius-lg);
+      padding: 11px 18px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .btn-warning:hover {
+      background: #ffedd5;
+      border-color: #fdba74;
+      color: #9a3412;
+    }
+
+    @keyframes pulseGlowLight {
+      0%, 100% {
+        box-shadow: 0 0 25px rgba(201, 147, 45, 0.25), 0 8px 30px rgba(0, 0, 0, 0.06);
+      }
+      50% {
+        box-shadow: 0 0 45px rgba(201, 147, 45, 0.45), 0 12px 40px rgba(0, 0, 0, 0.1);
+      }
+    }
+    .winner-card-pulse {
+      animation: pulseGlowLight 2.5s infinite ease-in-out;
+    }
+
+    .view-container {
+      display: none;
+    }
+    .view-container.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== 1. 설정 화면 (SETUP VIEW) ==================== -->
+  <div id="view-setup" class="view-container active" style="max-width: 1080px; margin: 0 auto; padding: 36px 20px 80px;">
+    <div style="text-align: center; margin-bottom: 36px;">
+      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(201, 147, 45, 0.12); border-radius: var(--radius-full); border: 1px solid var(--gold-border); margin-bottom: 14px;">
+        <span style="font-size: 15px;">✨</span>
+        <span style="font-size: 13px; font-weight: 600; color: var(--gold-dark); letter-spacing: 0.5px;">
+          사회복지기관 전용 3D 캡슐 경품 추첨 시스템
+        </span>
+      </div>
+      <h1 style="font-size: 38px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 10px; color: var(--text-main);">
+        3D 골드 캡슐머신 경품 추첨
+      </h1>
+      <p style="color: var(--text-muted); font-size: 15px;">
+        참가 번호와 경품을 설정하고, 원하는 경품별로 순서대로 공정하게 추첨하세요.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 24px;">
+      <!-- 좌측: 번호 범위 설정 -->
+      <div class="glass-panel" style="padding: 28px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+          <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(201, 147, 45, 0.12); display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--gold-dark);">
+            #
+          </div>
+          <div>
+            <h2 style="font-size: 19px; font-weight: 700;">참가 번호 범위 설정</h2>
+            <p style="font-size: 13px; color: var(--text-muted);">시작과 마지막 번호를 입력하세요</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-muted);">시작 번호</label>
+            <input type="number" id="input-start-num" value="1" style="width: 100%; background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 16px; color: var(--text-main); font-size: 18px; font-weight: 700; outline: none;" />
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-muted);">마지막 번호</label>
+            <input type="number" id="input-end-num" value="170" style="width: 100%; background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 16px; color: var(--text-main); font-size: 18px; font-weight: 700; outline: none;" />
+          </div>
+        </div>
+
+        <div id="box-range-validation" style="padding: 16px; border-radius: var(--radius-md); background: rgba(34, 197, 94, 0.08); border: 1px solid rgba(34, 197, 94, 0.25); display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <span id="txt-range-info" style="font-size: 14px; font-weight: 600; color: #15803d;">
+            1번 ~ 170번 (총 170명)
+          </span>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+          <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: var(--text-muted);">행사 제목</label>
+          <input type="text" id="input-session-title" value="2026 복지관 송년 후원자의 밤 경품 추첨" style="width: 100%; background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 12px 16px; color: var(--text-main); font-size: 15px; outline: none;" />
+        </div>
+
+        <button id="btn-reset-defaults" class="btn-secondary" style="width: 100%; padding: 10px 14px; font-size: 13px;">
+          🔄 기본 예시값(1~170번)으로 재설정
+        </button>
+      </div>
+
+      <!-- 우측: 경품 목록 관리 -->
+      <div class="glass-panel" style="padding: 28px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(201, 147, 45, 0.12); display: flex; align-items: center; justify-content: center; font-size: 18px;">
+              🎁
+            </div>
+            <div>
+              <h2 style="font-size: 19px; font-weight: 700;">경품 목록 관리</h2>
+              <p style="font-size: 13px; color: var(--text-muted);">원하는 경품을 바로 골라 추첨할 수 있습니다</p>
+            </div>
+          </div>
+          <span id="badge-total-prizes" style="font-size: 13px; font-weight: 700; color: var(--gold-dark); background: rgba(201, 147, 45, 0.12); padding: 4px 12px; border-radius: var(--radius-full);">
+            총 18개
+          </span>
+        </div>
+
+        <!-- 경품 추가 폼 -->
+        <div style="display: flex; gap: 10px; margin-bottom: 18px;">
+          <input type="text" id="input-new-prize-name" placeholder="새 경품 이름 (예: 한우 세트)" style="flex: 1; background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 14px; color: var(--text-main); font-size: 14px; outline: none;" />
+          <input type="number" id="input-new-prize-qty" value="1" min="1" style="width: 75px; background: #ffffff; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 10px 12px; color: var(--text-main); font-size: 14px; font-weight: 700; text-align: center; outline: none;" />
+          <button id="btn-add-prize" class="btn-gold-primary" style="padding: 10px 16px; border-radius: var(--radius-md); font-size: 14px;">
+            + 추가
+          </button>
+        </div>
+
+        <!-- 경품 리스트 -->
+        <div id="list-prizes" style="max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
+        </div>
+
+        <div id="alert-qty-invalid" style="display: none; padding: 12px; border-radius: var(--radius-md); background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); color: #b91c1c; font-size: 13px;">
+          ⚠️ 총 경품 수가 참가 번호 수보다 많습니다.
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 CTA 바 -->
+    <div style="margin-top: 36px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 24px 32px; background: #ffffff; border-radius: var(--radius-lg); border: 1px solid var(--border-card); box-shadow: 0 4px 16px rgba(0,0,0,0.03);">
+      <button id="btn-open-history" class="btn-secondary" style="padding: 12px 18px; font-size: 14px;">
+        📜 이전 추첨 기록 보기
+      </button>
+
+      <button id="btn-enter-draw" class="btn-gold-primary" style="font-size: 17px; padding: 15px 38px;">
+        ▶ 3D 추첨장 입장하기
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ==================== 2. 추첨 화면 (DRAWING VIEW) ==================== -->
+  <div id="view-draw" class="view-container" style="position: relative; min-height: 100vh; display: flex; flex-direction: column; justify-content: space-between; padding: 16px 24px 28px;">
+    <!-- 상단 헤더 -->
+    <header style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; z-index: 20;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <button id="btn-back-setup" class="btn-secondary" style="padding: 8px 14px; font-size: 13px;">
+          ← 설정 화면
+        </button>
+        <div>
+          <h1 id="txt-draw-session-title" style="font-size: 18px; font-weight: 700; color: var(--text-main);">
+            3D 캡슐머신 경품 추첨
+          </h1>
+          <p id="txt-draw-candidate-info" style="font-size: 12px; color: var(--text-muted);">
+            남은 참가 후보: 170명
+          </p>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <button id="btn-toggle-sound" class="btn-secondary" style="padding: 9px 12px; border-radius: var(--radius-md);" title="소리 켜기/끄기">
+          🔊 소리 ON
+        </button>
+        <button id="btn-toggle-fs" class="btn-secondary" style="padding: 9px 12px; border-radius: var(--radius-md);" title="전체화면">
+          ⛶ 전체화면
+        </button>
+        <button id="btn-go-results" class="btn-secondary" style="padding: 9px 16px; font-size: 14px; border-radius: var(--radius-md);">
+          📋 전체 결과 (<span id="txt-results-count">0</span>)
+        </button>
+      </div>
+    </header>
+
+    <!-- 각 경품별 개별 선택 탭 바 -->
+    <div id="bar-prize-tabs" style="margin: 12px 0 6px; display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; z-index: 20;">
+    </div>
+
+    <!-- 중앙 3D 뷰포트 -->
+    <div style="flex: 1; position: relative; display: flex; align-items: center; justify-content: center; margin: 6px 0; min-height: 480px;">
+      <div id="three-canvas-container" style="width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; align-items: center; justify-content: center;"></div>
+
+      <!-- 우측 상단: 당첨 현황 + 다시 뽑기 버튼 제공 -->
+      <div id="box-current-prize-feed" style="position: absolute; top: 10px; right: 16px; width: 260px; max-height: 320px; overflow-y: auto; background: rgba(255, 255, 255, 0.94); backdrop-filter: blur(10px); border: 1px solid var(--border-card); border-radius: var(--radius-lg); padding: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); z-index: 10; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 6px;">
+          <span id="txt-feed-prize-name" style="font-size: 13px; font-weight: 700; color: var(--gold-dark);">
+            당첨 현황
+          </span>
+          <span id="txt-feed-prize-count" style="font-size: 12px; color: var(--text-muted);">
+            0/0
+          </span>
+        </div>
+        <div id="list-feed-items" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+        </div>
+      </div>
+    </div>
+
+    <!-- 하단 컨트롤 바 -->
+    <footer id="footer-controls" style="display: flex; align-items: center; justify-content: center; gap: 16px; z-index: 20;">
+      <button id="btn-draw-single" class="btn-gold-primary" style="font-size: 18px; padding: 16px 48px; min-width: 260px;">
+        ▶ 캡슐 뽑기 (1명)
+      </button>
+    </footer>
+  </div>
+
+
+  <!-- ==================== 3. 당첨 결과 대형 모달 (현장 부재 재추첨 기능 포함) ==================== -->
+  <div id="modal-winner" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(20, 20, 25, 0.65); backdrop-filter: blur(10px); align-items: center; justify-content: center; z-index: 1000; padding: 24px;">
+    <div class="glass-panel winner-card-pulse" style="width: 100%; max-width: 580px; text-align: center; padding: 40px 32px; border-radius: 24px; border: 2px solid var(--gold-border); background: linear-gradient(180deg, #ffffff 0%, #faf8f5 100%); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);">
+      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 18px; background: rgba(201, 147, 45, 0.12); border: 1px solid var(--gold-border); border-radius: var(--radius-full); margin-bottom: 14px;">
+        <span style="font-size: 16px;">🏆</span>
+        <span style="font-size: 15px; font-weight: 700; color: var(--gold-dark); letter-spacing: 0.5px;">
+          축하합니다! 당첨 번호
+        </span>
+      </div>
+
+      <h2 id="modal-winner-prize-name" style="font-size: 27px; font-weight: 700; color: var(--text-main); margin-bottom: 14px;">
+        1등 스마트워치
+      </h2>
+
+      <div style="margin: 16px 0 24px; padding: 24px; background: linear-gradient(135deg, #fefbf3 0%, #f7f1e1 100%); border-radius: 20px; border: 2px solid var(--gold-border); box-shadow: inset 0 2px 10px rgba(201, 147, 45, 0.1);">
+        <div id="modal-winner-number" style="font-size: 88px; font-weight: 800; line-height: 1; letter-spacing: 1px; color: var(--gold-dark); text-shadow: 0 2px 10px rgba(201, 147, 45, 0.25);">
+          77<span style="font-size: 34px; font-weight: 600; margin-left: 6px; color: var(--text-main);">번</span>
+        </div>
+        <p id="modal-winner-order" style="margin-top: 10px; font-size: 14px; color: var(--text-muted);">
+          추첨 순서: 제 1회차
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button id="btn-modal-redraw" class="btn-warning" title="현장에 사람이 없는 경우 취소하고 다시 뽑습니다">
+          🔄 부재자 다시 뽑기
+        </button>
+        <button id="btn-modal-close" class="btn-secondary" style="padding: 12px 22px; font-size: 15px;">
+          ✓ 확인
+        </button>
+        <button id="btn-modal-next" class="btn-gold-primary" style="padding: 12px 26px; font-size: 15px;">
+          다음 당첨자 추첨 →
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== 4. 전체 결과 그리드 화면 ==================== -->
+  <div id="view-results" class="view-container" style="max-width: 1240px; margin: 0 auto; padding: 32px 20px 80px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 32px;">
+      <div style="display: flex; gap: 10px;">
+        <button id="btn-results-back-draw" class="btn-secondary" style="padding: 10px 18px; font-size: 14px;">
+          ← 추첨 머신으로
+        </button>
+        <button id="btn-results-back-setup" class="btn-secondary" style="padding: 10px 18px; font-size: 14px;">
+          설정 화면
+        </button>
+      </div>
+
+      <div style="display: flex; gap: 10px;">
+        <button id="btn-download-csv" class="btn-gold-primary" style="padding: 12px 22px; font-size: 15px;">
+          📥 CSV 엑셀 다운로드
+        </button>
+        <button id="btn-new-session" class="btn-secondary" style="padding: 12px 20px; font-size: 15px;">
+          🔄 새 행사 시작
+        </button>
+      </div>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 40px;">
+      <div style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 16px; background: rgba(201, 147, 45, 0.12); border-radius: var(--radius-full); border: 1px solid var(--gold-border); margin-bottom: 12px;">
+        <span style="font-size: 15px;">🏆</span>
+        <span style="font-size: 13px; font-weight: 700; color: var(--gold-dark);">최종 당첨 결과 발표</span>
+      </div>
+      <h1 id="txt-final-session-title" style="font-size: 36px; font-weight: 800; color: var(--text-main); margin-bottom: 8px;">
+        경품 추첨 결과
+      </h1>
+      <p id="txt-final-summary" style="color: var(--text-muted); font-size: 15px;">
+        총 0명의 행운의 당첨자가 선정되었습니다.
+      </p>
+    </div>
+
+    <div id="container-grouped-results" style="display: flex; flex-direction: column; gap: 32px;">
+    </div>
+  </div>
+
+
+  <!-- ==================== 5. 자바스크립트 로직 ==================== -->
+  <script>
+    class WebSoundManager {
+      constructor() {
+        this.ctx = null;
+        this.muted = localStorage.getItem('capsule_muted') === 'true';
+        this.spinInterval = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+      toggleMute() {
+        this.muted = !this.muted;
+        localStorage.setItem('capsule_muted', String(this.muted));
+        if (this.muted) this.stopSpin();
+        return this.muted;
+      }
+      startSpin() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        this.stopSpin();
+        let step = 0;
+        this.spinInterval = setInterval(() => {
+          if (this.muted || !this.ctx) return;
+          step++;
+          const now = this.ctx.currentTime;
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = step % 2 === 0 ? 'triangle' : 'square';
+          osc.frequency.setValueAtTime(140 + (step % 5) * 35, now);
+          osc.frequency.exponentialRampToValueAtTime(40, now + 0.05);
+          gain.gain.setValueAtTime(0.12, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.05);
+
+          if (step % 3 === 0) {
+            const m = this.ctx.createOscillator();
+            const mg = this.ctx.createGain();
+            m.type = 'sine';
+            m.frequency.setValueAtTime(800 + Math.random() * 600, now);
+            mg.gain.setValueAtTime(0.04, now);
+            mg.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+            m.connect(mg);
+            mg.connect(this.ctx.destination);
+            m.start(now);
+            m.stop(now + 0.04);
+          }
+        }, 70);
+      }
+      stopSpin() {
+        if (this.spinInterval) {
+          clearInterval(this.spinInterval);
+          this.spinInterval = null;
+        }
+      }
+      playDrop() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(90, now + 0.18);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.18);
+      }
+      playOpen() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(500, now);
+        osc.frequency.exponentialRampToValueAtTime(1400, now + 0.12);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now);
+        osc.stop(now + 0.12);
+
+        [1200, 1500, 1900].forEach((freq, idx) => {
+          const chime = this.ctx.createOscillator();
+          const cGain = this.ctx.createGain();
+          const st = now + 0.05 + idx * 0.04;
+          chime.type = 'sine';
+          chime.frequency.setValueAtTime(freq, st);
+          cGain.gain.setValueAtTime(0.12, st);
+          cGain.gain.exponentialRampToValueAtTime(0.0001, st + 0.3);
+          chime.connect(cGain);
+          cGain.connect(this.ctx.destination);
+          chime.start(st);
+          chime.stop(st + 0.3);
+        });
+      }
+      playFanfare() {
+        if (this.muted) return;
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        const notes = [
+          { freq: 523.25, time: 0, dur: 0.2 },
+          { freq: 659.25, time: 0.15, dur: 0.2 },
+          { freq: 783.99, time: 0.3, dur: 0.25 },
+          { freq: 1046.50, time: 0.45, dur: 0.8 },
+          { freq: 1318.51, time: 0.6, dur: 1.0 }
+        ];
+        notes.forEach(({ freq, time, dur }) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          const st = now + time;
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, st);
+          gain.gain.setValueAtTime(0, st);
+          gain.gain.linearRampToValueAtTime(0.25, st + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(st);
+          osc.stop(st + dur);
+        });
+      }
+    }
+    const soundMgr = new WebSoundManager();
+
+    const STORAGE_KEY = 'capsule_lottery_standalone_session';
+    const HISTORY_KEY = 'capsule_lottery_standalone_history';
+
+    function createDefaultState() {
+      return {
+        id: 'session_' + Date.now(),
+        title: '2026 복지관 송년 후원자의 밤 경품 추첨',
+        startNumber: 1,
+        endNumber: 170,
+        selectedPrizeId: 'prize_1',
+        prizes: [
+          { id: 'prize_1', name: '1등 스마트워치', quantity: 1, drawnCount: 0 },
+          { id: 'prize_2', name: '2등 무선이어폰', quantity: 2, drawnCount: 0 },
+          { id: 'prize_3', name: '3등 백화점 상품권 (5만원)', quantity: 5, drawnCount: 0 },
+          { id: 'prize_4', name: '행운상 치킨 교환권', quantity: 10, drawnCount: 0 }
+        ],
+        results: [],
+        drawnNumbers: []
+      };
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const p = JSON.parse(raw);
+          if (p && typeof p.startNumber === 'number') return p;
+        }
+      } catch (e) {}
+      return createDefaultState();
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {}
+    }
+
+    let appState = loadState();
+    let lastWinningResult = null;
+
+    let scene, camera, renderer;
+    let crankHandle, dispensedGroup, topHalf, bottomHalf, coreLight, sparkParticles;
+    let innerCapsules = [];
+    let isSpinning = false;
+    let dispensingState = 'idle';
+    let rollProgress = 0, openProgress = 0;
+    const particleCount = 100;
+    const pVelocities = [];
+
+    function initThree() {
+      const container = document.getElementById('three-canvas-container');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const w = container.clientWidth || 800;
+      const h = container.clientHeight || 550;
+
+      scene = new THREE.Scene();
+
+      camera = new THREE.PerspectiveCamera(38, w / h, 0.1, 100);
+      camera.position.set(0, 1.65, 7.5);
+      camera.lookAt(0, 0.6, 0);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setSize(w, h);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.35;
+      container.appendChild(renderer.domElement);
+
+      scene.add(new THREE.AmbientLight(0xffffff, 2.0));
+
+      const mainLight = new THREE.DirectionalLight(0xfff8e7, 2.2);
+      mainLight.position.set(4, 7, 5);
+      scene.add(mainLight);
+
+      const fillLight = new THREE.DirectionalLight(0xffffff, 1.8);
+      fillLight.position.set(-5, 4, 4);
+      scene.add(fillLight);
+
+      const topSpot = new THREE.SpotLight(0xffe899, 3.0);
+      topSpot.position.set(0, 9, 2);
+      topSpot.angle = Math.PI / 3;
+      topSpot.penumbra = 0.4;
+      scene.add(topSpot);
+
+      const goldMat = new THREE.MeshStandardMaterial({ color: 0xdeb043, metalness: 0.9, roughness: 0.18 });
+      const shinyGoldMat = new THREE.MeshStandardMaterial({ color: 0xf3c759, metalness: 0.95, roughness: 0.12 });
+      const pearlWhiteMat = new THREE.MeshStandardMaterial({ color: 0xfcfbfa, metalness: 0.2, roughness: 0.2 });
+      const glassMat = new THREE.MeshPhysicalMaterial({
+        color: 0xffffff, transparent: true, opacity: 0.22, roughness: 0.04, metalness: 0.05, transmission: 0.96, ior: 1.48
+      });
+
+      const machineGroup = new THREE.Group();
+      scene.add(machineGroup);
+
+      const baseCyl = new THREE.Mesh(new THREE.CylinderGeometry(1.68, 1.95, 1.25, 36), pearlWhiteMat);
+      baseCyl.position.y = -0.6;
+      machineGroup.add(baseCyl);
+
+      const r1 = new THREE.Mesh(new THREE.TorusGeometry(1.95, 0.08, 16, 48), goldMat);
+      r1.rotation.x = Math.PI / 2;
+      r1.position.y = -1.22;
+      machineGroup.add(r1);
+
+      const r2 = new THREE.Mesh(new THREE.TorusGeometry(1.68, 0.08, 16, 48), goldMat);
+      r2.rotation.x = Math.PI / 2;
+      r2.position.y = 0.02;
+      machineGroup.add(r2);
+
+      const chuteRim = new THREE.Mesh(new THREE.TorusGeometry(0.42, 0.06, 16, 32, Math.PI), goldMat);
+      chuteRim.rotation.x = Math.PI / 2;
+      chuteRim.position.set(0, -0.58, 1.62);
+      machineGroup.add(chuteRim);
+
+      const chuteInner = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.5, 20, 1, true), pearlWhiteMat);
+      chuteInner.rotation.x = Math.PI / 3;
+      chuteInner.position.set(0, -0.75, 1.45);
+      machineGroup.add(chuteInner);
+
+      const crankHub = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.16, 32), goldMat);
+      crankHub.rotation.x = Math.PI / 2;
+      crankHub.position.set(0, -0.28, 1.72);
+      machineGroup.add(crankHub);
+
+      crankHandle = new THREE.Group();
+      crankHandle.position.set(0, -0.28, 1.72);
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.08, 0.08), goldMat);
+      crankHandle.add(bar);
+      const knob = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), shinyGoldMat);
+      knob.position.set(0.38, 0, 0.12);
+      crankHandle.add(knob);
+      machineGroup.add(crankHandle);
+
+      const globeRadius = 1.48;
+      const glassGlobe = new THREE.Mesh(new THREE.SphereGeometry(globeRadius, 36, 28), glassMat);
+      glassGlobe.position.y = 1.38;
+      machineGroup.add(glassGlobe);
+
+      const topCap = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.88, 0.32, 32), goldMat);
+      topCap.position.y = 1.38 + globeRadius - 0.05;
+      machineGroup.add(topCap);
+
+      const topFinial = new THREE.Mesh(new THREE.SphereGeometry(0.24, 20, 20), shinyGoldMat);
+      topFinial.position.y = topCap.position.y + 0.3;
+      machineGroup.add(topFinial);
+
+      const centerRod = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 2.3, 16), goldMat);
+      centerRod.position.y = 1.38;
+      machineGroup.add(centerRod);
+
+      innerCapsules = [];
+      const vibrantPalette = [
+        { top: 0xffd700, bot: 0xffffff },
+        { top: 0xf43f5e, bot: 0xfed7aa },
+        { top: 0x3b82f6, bot: 0xffffff },
+        { top: 0x10b981, bot: 0xfef08a },
+        { top: 0x8b5cf6, bot: 0xfbcfe8 },
+        { top: 0xf97316, bot: 0xffffff }
+      ];
+      const capHalfGeom = new THREE.SphereGeometry(0.18, 16, 12, 0, Math.PI * 2, 0, Math.PI / 2);
+      const capBandGeom = new THREE.CylinderGeometry(0.182, 0.182, 0.05, 16);
+
+      for (let i = 0; i < 48; i++) {
+        const cap = new THREE.Group();
+        const style = vibrantPalette[i % vibrantPalette.length];
+        const tMesh = new THREE.Mesh(capHalfGeom, new THREE.MeshStandardMaterial({ color: style.top, roughness: 0.18 }));
+        tMesh.position.y = 0.03;
+        cap.add(tMesh);
+        const bMesh = new THREE.Mesh(capHalfGeom, new THREE.MeshStandardMaterial({ color: style.bot, roughness: 0.2 }));
+        bMesh.rotation.x = Math.PI;
+        bMesh.position.y = -0.03;
+        cap.add(bMesh);
+        cap.add(new THREE.Mesh(capBandGeom, goldMat));
+
+        const theta = Math.random() * Math.PI * 2;
+        const phi = Math.acos(2 * Math.random() - 1);
+        const r = 0.35 + Math.random() * (globeRadius - 0.42);
+        const x = r * Math.sin(phi) * Math.cos(theta);
+        const y = 1.38 - 0.45 + (Math.random() * 0.95);
+        const z = r * Math.sin(phi) * Math.sin(theta);
+        cap.position.set(x, y, z);
+        cap.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, 0);
+
+        machineGroup.add(cap);
+        innerCapsules.push({
+          group: cap,
+          initialPos: new THREE.Vector3(x, y, z),
+          rotationSpeed: new THREE.Vector3((Math.random() - 0.5) * 0.12, (Math.random() - 0.5) * 0.12, (Math.random() - 0.5) * 0.12)
+        });
+      }
+
+      dispensedGroup = new THREE.Group();
+      dispensedGroup.position.set(0, -0.65, 1.6);
+      dispensedGroup.scale.set(0.001, 0.001, 0.001);
+      scene.add(dispensedGroup);
+
+      topHalf = new THREE.Mesh(
+        new THREE.SphereGeometry(0.38, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2),
+        shinyGoldMat
+      );
+      topHalf.position.y = 0.05;
+      dispensedGroup.add(topHalf);
+
+      bottomHalf = new THREE.Mesh(
+        new THREE.SphereGeometry(0.38, 32, 20, 0, Math.PI * 2, 0, Math.PI / 2),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.15 })
+      );
+      bottomHalf.rotation.x = Math.PI;
+      bottomHalf.position.y = -0.05;
+      dispensedGroup.add(bottomHalf);
+
+      dispensedGroup.add(new THREE.Mesh(
+        new THREE.CylinderGeometry(0.385, 0.385, 0.08, 32),
+        goldMat
+      ));
+
+      coreLight = new THREE.PointLight(0xffdf78, 0, 5);
+      dispensedGroup.add(coreLight);
+
+      const pGeom = new THREE.BufferGeometry();
+      const pPos = new Float32Array(particleCount * 3);
+      for (let i = 0; i < particleCount; i++) {
+        pPos[i * 3] = 0;
+        pPos[i * 3 + 1] = 0;
+        pPos[i * 3 + 2] = 0;
+        pVelocities.push(new THREE.Vector3((Math.random() - 0.5) * 0.06, Math.random() * 0.08 + 0.02, (Math.random() - 0.5) * 0.06));
+      }
+      pGeom.setAttribute('position', new THREE.BufferAttribute(pPos, 3));
+      sparkParticles = new THREE.Points(pGeom, new THREE.PointsMaterial({
+        color: 0xe6b74e, size: 0.07, transparent: true, opacity: 0, blending: THREE.AdditiveBlending
+      }));
+      dispensedGroup.add(sparkParticles);
+
+      window.addEventListener('resize', onWindowResize);
+      animateThree();
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById('three-canvas-container');
+      if (!container || !camera || !renderer) return;
+      const w = container.clientWidth || 800;
+      const h = container.clientHeight || 550;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+
+    function animateThree() {
+      requestAnimationFrame(animateThree);
+
+      if (crankHandle) {
+        if (isSpinning) {
+          crankHandle.rotation.z -= 0.18;
+        } else {
+          crankHandle.rotation.z *= 0.95;
+        }
+      }
+
+      innerCapsules.forEach((item, idx) => {
+        if (isSpinning) {
+          const angle = 0.09 + (idx % 3) * 0.02;
+          const cos = Math.cos(angle);
+          const sin = Math.sin(angle);
+          const x = item.group.position.x;
+          const z = item.group.position.z;
+          item.group.position.x = x * cos - z * sin;
+          item.group.position.z = x * sin + z * cos;
+          item.group.position.y += Math.sin(Date.now() * 0.015 + idx) * 0.038;
+          if (item.group.position.y > 2.4) item.group.position.y = 2.4;
+          if (item.group.position.y < 0.2) item.group.position.y = 0.2;
+          item.group.rotation.x += item.rotationSpeed.x * 3.5;
+          item.group.rotation.y += item.rotationSpeed.y * 3.5;
+        } else {
+          item.group.position.lerp(item.initialPos, 0.04);
+        }
+      });
+
+      if (dispensedGroup) {
+        if (dispensingState === 'idle') {
+          dispensedGroup.scale.set(0.001, 0.001, 0.001);
+          dispensedGroup.position.set(0, -0.65, 1.6);
+          rollProgress = 0;
+          openProgress = 0;
+          if (topHalf) { topHalf.position.y = 0.05; topHalf.rotation.x = 0; }
+          if (bottomHalf) { bottomHalf.position.y = -0.05; bottomHalf.rotation.x = Math.PI; }
+          if (coreLight) coreLight.intensity = 0;
+          if (sparkParticles) sparkParticles.material.opacity = 0;
+        } else if (dispensingState === 'rolling') {
+          rollProgress = Math.min(rollProgress + 0.035, 1);
+          const easeOut = 1 - Math.pow(1 - rollProgress, 3);
+          dispensedGroup.position.set(0, -0.65 + easeOut * 1.3, 1.6 + easeOut * 1.25);
+          const s = easeOut * 1.28;
+          dispensedGroup.scale.set(s, s, s);
+          dispensedGroup.rotation.x = easeOut * Math.PI * 4;
+          dispensedGroup.rotation.y = easeOut * Math.PI * 2;
+        } else if (dispensingState === 'opening' || dispensingState === 'opened') {
+          dispensedGroup.position.set(0, 0.65, 2.85);
+          dispensedGroup.scale.set(1.28, 1.28, 1.28);
+          dispensedGroup.rotation.set(0, 0, 0);
+
+          openProgress = Math.min(openProgress + 0.04, 1);
+          const openEase = 1 - Math.pow(1 - openProgress, 3);
+
+          if (topHalf) {
+            topHalf.position.y = 0.05 + openEase * 0.42;
+            topHalf.rotation.x = -openEase * 0.55;
+          }
+          if (bottomHalf) {
+            bottomHalf.position.y = -0.05 - openEase * 0.32;
+            bottomHalf.rotation.x = Math.PI + openEase * 0.35;
+          }
+          if (coreLight) coreLight.intensity = openEase * 3.5;
+          if (sparkParticles) {
+            sparkParticles.material.opacity = Math.max(0, 1 - (openProgress - 0.4) * 1.6);
+            const posAttr = sparkParticles.geometry.getAttribute('position');
+            const arr = posAttr.array;
+            for (let i = 0; i < particleCount; i++) {
+              arr[i * 3] += pVelocities[i].x;
+              arr[i * 3 + 1] += pVelocities[i].y;
+            }
+            posAttr.needsUpdate = true;
+          }
+        }
+      }
+
+      if (scene) {
+        scene.rotation.y = Math.sin(Date.now() * 0.0008) * 0.08;
+        renderer.render(scene, camera);
+      }
+    }
+
+    function switchView(viewName) {
+      document.querySelectorAll('.view-container').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById('view-' + viewName);
+      if (target) target.classList.add('active');
+
+      if (viewName === 'draw') {
+        renderDrawView();
+        setTimeout(onWindowResize, 50);
+      } else if (viewName === 'results') {
+        renderResultsView();
+      } else if (viewName === 'setup') {
+        renderSetupView();
+      }
+    }
+
+    function renderSetupView() {
+      document.getElementById('input-start-num').value = appState.startNumber;
+      document.getElementById('input-end-num').value = appState.endNumber;
+      document.getElementById('input-session-title').value = appState.title;
+
+      const totalNums = Math.max(0, appState.endNumber - appState.startNumber + 1);
+      const isRangeOk = appState.startNumber >= 0 && appState.endNumber >= appState.startNumber;
+
+      const valBox = document.getElementById('box-range-validation');
+      const valTxt = document.getElementById('txt-range-info');
+      if (isRangeOk) {
+        valBox.style.background = 'rgba(34, 197, 94, 0.08)';
+        valBox.style.borderColor = 'rgba(34, 197, 94, 0.25)';
+        valTxt.style.color = '#15803d';
+        valTxt.textContent = `${appState.startNumber}번 ~ ${appState.endNumber}번 (총 ${totalNums.toLocaleString()}명)`;
+      } else {
+        valBox.style.background = 'rgba(239, 68, 68, 0.08)';
+        valBox.style.borderColor = 'rgba(239, 68, 68, 0.25)';
+        valTxt.style.color = '#b91c1c';
+        valTxt.textContent = '시작 번호가 마지막 번호보다 클 수 없습니다.';
+      }
+
+      const totalPrizes = appState.prizes.reduce((s, p) => s + p.quantity, 0);
+      document.getElementById('badge-total-prizes').textContent = `총 ${totalPrizes}개`;
+
+      const alertQty = document.getElementById('alert-qty-invalid');
+      const isQtyOk = totalPrizes > 0 && totalPrizes <= totalNums;
+      alertQty.style.display = (!isQtyOk && totalPrizes > 0) ? 'block' : 'none';
+
+      document.getElementById('btn-enter-draw').disabled = !isRangeOk || !isQtyOk;
+
+      const listContainer = document.getElementById('list-prizes');
+      listContainer.innerHTML = '';
+      appState.prizes.forEach((p, idx) => {
+        const item = document.createElement('div');
+        item.style.cssText = 'display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#ffffff; border:1px solid var(--border-card); border-radius:var(--radius-md); box-shadow:0 1px 3px rgba(0,0,0,0.02);';
+
+        const isCompleted = p.drawnCount >= p.quantity;
+        item.innerHTML = `
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:24px; height:24px; border-radius:6px; background:rgba(201, 147, 45, 0.15); color:var(--gold-dark); font-size:12px; font-weight:700; display:flex; align-items:center; justify-content:center;">
+              ${idx + 1}
+            </span>
+            <div>
+              <span style="font-size:15px; font-weight:600; color:var(--text-main);">${p.name}</span>
+              ${p.drawnCount > 0 ? `<span style="font-size:12px; color:${isCompleted ? '#16a34a' : 'var(--gold-dark)'}; margin-left:8px; font-weight:600;">(${p.drawnCount}/${p.quantity} 추첨됨)</span>` : ''}
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:12px; color:var(--text-muted);">수량:</span>
+            <input type="number" min="1" value="${p.quantity}" data-prize-id="${p.id}" class="input-prize-qty" style="width:56px; background:#f9f8f6; border:1px solid var(--border-subtle); border-radius:6px; padding:4px 6px; color:var(--text-main); font-size:14px; font-weight:700; text-align:center; outline:none;" />
+            <button data-draw-prize-id="${p.id}" class="btn-gold-primary" style="padding:6px 12px; font-size:12px; border-radius:6px;" title="이 경품만 따로 추첨">
+              ▶ 추첨
+            </button>
+            <button data-delete-prize-id="${p.id}" class="btn-danger" title="삭제">
+              삭제
+            </button>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+    }
+
+    function renderDrawView() {
+      document.getElementById('txt-draw-session-title').textContent = appState.title || '3D 캡슐머신 경품 추첨';
+      const remainingCandidates = appState.endNumber - appState.startNumber + 1 - appState.drawnNumbers.length;
+      document.getElementById('txt-draw-candidate-info').textContent = `남은 참가 후보: ${remainingCandidates}명 / 전체 ${appState.endNumber - appState.startNumber + 1}명`;
+      document.getElementById('txt-results-count').textContent = appState.results.length;
+
+      const tabsBar = document.getElementById('bar-prize-tabs');
+      tabsBar.innerHTML = '<span style="font-size:13px; font-weight:700; color:var(--text-muted); margin-right:4px;">추첨할 경품 선택:</span>';
+
+      appState.prizes.forEach(p => {
+        const isSelected = p.id === appState.selectedPrizeId;
+        const isCompleted = p.drawnCount >= p.quantity;
+        const tabBtn = document.createElement('button');
+        tabBtn.style.cssText = `
+          display:inline-flex; align-items:center; gap:8px; padding:8px 16px; border-radius:var(--radius-full);
+          font-size:14px; font-weight:${isSelected ? 700 : 500}; cursor:pointer; transition:all 0.2s ease;
+          border:${isSelected ? '2px solid var(--gold-primary)' : '1px solid var(--border-subtle)'};
+          background:${isSelected ? '#ffffff' : isCompleted ? 'rgba(0,0,0,0.03)' : '#ffffff'};
+          color:${isSelected ? 'var(--gold-dark)' : isCompleted ? 'var(--text-muted)' : 'var(--text-main)'};
+          box-shadow:${isSelected ? '0 4px 14px rgba(201, 147, 45, 0.25)' : 'none'};
+        `;
+        tabBtn.innerHTML = `
+          <span>${isCompleted ? '✅' : '🎁'}</span>
+          <span>${p.name}</span>
+          <span style="font-size:12px; padding:2px 8px; border-radius:var(--radius-full); background:${isCompleted ? '#dcfce7' : isSelected ? 'rgba(201, 147, 45, 0.15)' : '#f3f4f6'}; color:${isCompleted ? '#15803d' : isSelected ? 'var(--gold-dark)' : '#666'}; font-weight:700;">
+            ${p.drawnCount} / ${p.quantity}
+          </span>
+        `;
+        tabBtn.onclick = () => {
+          appState.selectedPrizeId = p.id;
+          saveState();
+          renderDrawView();
+        };
+        tabsBar.appendChild(tabBtn);
+      });
+
+      const curr = appState.prizes.find(p => p.id === appState.selectedPrizeId) || appState.prizes[0];
+      if (curr) {
+        document.getElementById('txt-feed-prize-name').textContent = `[${curr.name}] 당첨 현황`;
+        document.getElementById('txt-feed-prize-count').textContent = `${curr.drawnCount}/${curr.quantity}`;
+
+        const feedList = document.getElementById('list-feed-items');
+        feedList.innerHTML = '';
+        const currResults = appState.results.filter(r => r.prizeId === curr.id);
+        if (currResults.length === 0) {
+          feedList.innerHTML = '<div style="text-align:center; padding:12px 0; font-size:12px; color:var(--text-muted);">아직 당첨자가 없습니다.</div>';
+        } else {
+          currResults.slice().reverse().forEach(r => {
+            const row = document.createElement('div');
+            row.style.cssText = 'display:flex; justify-content:space-between; align-items:center; padding:3px 0; border-bottom:1px dashed #f0eee6;';
+            row.innerHTML = `
+              <div>
+                <span style="color:var(--text-muted); font-size:12px;">#${r.drawOrder}</span>
+                <span style="font-weight:800; color:var(--gold-dark); font-size:15px; margin-left:6px;">${r.number}번</span>
+              </div>
+              <button data-cancel-result-id="${r.id}" class="btn-warning" style="padding:2px 8px; font-size:11px; border-radius:4px;" title="이 당첨자를 취소하고 다시 뽑습니다">
+                다시뽑기
+              </button>
+            `;
+            feedList.appendChild(row);
+          });
+        }
+
+        const isCurrDone = curr.drawnCount >= curr.quantity;
+        const footer = document.getElementById('footer-controls');
+        if (isCurrDone) {
+          const nextUnfinished = appState.prizes.find(p => p.drawnCount < p.quantity);
+          footer.innerHTML = `
+            <div style="display:flex; align-items:center; gap:14px; background:rgba(255, 255, 255, 0.95); border:1px solid var(--border-card); padding:12px 24px; border-radius:var(--radius-lg); box-shadow:0 4px 16px rgba(0,0,0,0.05);">
+              <span style="font-size:20px;">🎉</span>
+              <span style="font-size:16px; font-weight:700; color:var(--text-main);">[${curr.name}] 추첨이 모두 완료되었습니다!</span>
+              ${nextUnfinished ? `
+                <button id="btn-next-unfinished-prize" class="btn-gold-primary" style="padding:10px 20px; font-size:14px;">
+                  다음 미완료 경품으로 →
+                </button>
+              ` : `
+                <button id="btn-finish-all-results" class="btn-gold-primary" style="padding:10px 20px; font-size:14px;">
+                  최종 결과 확인하기 →
+                </button>
+              `}
+            </div>
+          `;
+          const btnNextUnf = document.getElementById('btn-next-unfinished-prize');
+          if (btnNextUnf) {
+            btnNextUnf.onclick = () => {
+              if (nextUnfinished) {
+                appState.selectedPrizeId = nextUnfinished.id;
+                saveState();
+                renderDrawView();
+              }
+            };
+          }
+          const btnFin = document.getElementById('btn-finish-all-results');
+          if (btnFin) {
+            btnFin.onclick = () => switchView('results');
+          }
+        } else {
+          footer.innerHTML = `
+            <button id="btn-draw-single" class="btn-gold-primary" style="font-size:18px; padding:16px 48px; min-width:260px;">
+              ▶ [${curr.name}] 1명 뽑기 (${curr.drawnCount + 1}/${curr.quantity})
+            </button>
+          `;
+          document.getElementById('btn-draw-single').onclick = triggerDrawSingle;
+        }
+      }
+    }
+
+    function renderResultsView() {
+      document.getElementById('txt-final-session-title').textContent = appState.title || '경품 추첨 결과';
+      document.getElementById('txt-final-summary').textContent = `총 ${appState.results.length}명의 행운의 당첨자가 선정되었습니다.`;
+
+      const container = document.getElementById('container-grouped-results');
+      container.innerHTML = '';
+
+      if (appState.results.length === 0) {
+        container.innerHTML = '<div class="glass-panel" style="text-align:center; padding:60px 20px; color:var(--text-muted); font-size:16px;">아직 추첨된 결과가 없습니다.</div>';
+        return;
+      }
+
+      appState.prizes.forEach(prize => {
+        const pResults = appState.results.filter(r => r.prizeId === prize.id);
+        if (pResults.length === 0) return;
+
+        const pBox = document.createElement('div');
+        pBox.className = 'glass-panel';
+        pBox.style.padding = '28px';
+
+        let cardsHtml = '';
+        pResults.forEach(r => {
+          cardsHtml += `
+            <div style="background:linear-gradient(145deg, #ffffff 0%, #faf8f5 100%); border:1.5px solid var(--gold-border); border-radius:16px; padding:20px 16px; text-align:center; box-shadow:0 4px 14px rgba(0,0,0,0.04); position:relative;">
+              <div style="position:absolute; top:10px; left:12px; font-size:11px; color:var(--text-muted); font-weight:600;">#${r.drawOrder}</div>
+              <div style="font-size:46px; font-weight:800; color:var(--gold-dark); line-height:1.1; margin:12px 0 6px; text-shadow:0 2px 8px rgba(201, 147, 45, 0.2);">
+                ${r.number}<span style="font-size:18px; font-weight:600; margin-left:3px; color:var(--text-main);">번</span>
+              </div>
+              <div style="font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+                ${new Date(r.drawnAt).toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit', second:'2-digit' })}
+              </div>
+              <button data-cancel-result-id="${r.id}" class="btn-warning" style="padding:4px 10px; font-size:12px; width:100%;" title="부재 취소 후 다시 추첨">
+                🔄 부재자 다시 뽑기
+              </button>
+            </div>
+          `;
+        });
+
+        pBox.innerHTML = `
+          <div style="display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-subtle); padding-bottom:16px; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:22px;">🎁</span>
+              <h2 style="font-size:22px; font-weight:700; color:var(--text-main);">${prize.name}</h2>
+            </div>
+            <span style="font-size:14px; font-weight:600; color:var(--gold-dark); background:rgba(201, 147, 45, 0.1); padding:4px 12px; border-radius:var(--radius-full);">
+              당첨 ${pResults.length} / 총 ${prize.quantity}개
+            </span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px;">
+            ${cardsHtml}
+          </div>
+        `;
+        container.appendChild(pBox);
+      });
+    }
+
+    function triggerDrawSingle() {
+      if (isSpinning || dispensingState !== 'idle') return;
+
+      const curr = appState.prizes.find(p => p.id === appState.selectedPrizeId);
+      if (!curr || curr.drawnCount >= curr.quantity) return;
+
+      const drawnSet = new Set(appState.drawnNumbers);
+      const candidates = [];
+      for (let i = appState.startNumber; i <= appState.endNumber; i++) {
+        if (!drawnSet.has(i)) candidates.push(i);
+      }
+      if (candidates.length === 0) {
+        alert('추첨 가능한 참가 번호가 남아있지 않습니다.');
+        return;
+      }
+
+      const arr = new Uint32Array(1);
+      crypto.getRandomValues(arr);
+      const winningNumber = candidates[arr[0] % candidates.length];
+
+      isSpinning = true;
+      soundMgr.startSpin();
+
+      setTimeout(() => {
+        isSpinning = false;
+        soundMgr.stopSpin();
+
+        dispensingState = 'rolling';
+        soundMgr.playDrop();
+
+        setTimeout(() => {
+          dispensingState = 'opening';
+          soundMgr.playOpen();
+
+          setTimeout(() => {
+            dispensingState = 'opened';
+
+            const newRes = {
+              id: 'res_' + Date.now(),
+              drawOrder: appState.results.length + 1,
+              prizeId: curr.id,
+              prizeName: curr.name,
+              number: winningNumber,
+              drawnAt: new Date().toISOString()
+            };
+
+            curr.drawnCount++;
+            appState.results.push(newRes);
+            appState.drawnNumbers.push(winningNumber);
+            lastWinningResult = newRes;
+            saveState();
+
+            showWinnerModal(newRes, curr.drawnCount >= curr.quantity);
+            renderDrawView();
+          }, 800);
+        }, 900);
+      }, 2200);
+    }
+
+    function showWinnerModal(res, isPrizeDone) {
+      soundMgr.playFanfare();
+
+      if (window.confetti) {
+        const end = Date.now() + 2500;
+        const frame = () => {
+          confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0.1, y: 0.7 }, colors: ['#e6b74e', '#c9932d', '#ffd700', '#ffffff'] });
+          confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 0.9, y: 0.7 }, colors: ['#e6b74e', '#c9932d', '#ffd700', '#ffffff'] });
+          if (Date.now() < end) requestAnimationFrame(frame);
+        };
+        frame();
+      }
+
+      document.getElementById('modal-winner-prize-name').textContent = res.prizeName;
+      document.getElementById('modal-winner-number').innerHTML = `${res.number}<span style="font-size:34px; font-weight:600; margin-left:6px; color:var(--text-main);">번</span>`;
+      document.getElementById('modal-winner-order').textContent = `추첨 순서: 제 ${res.drawOrder}회차`;
+
+      const btnNext = document.getElementById('btn-modal-next');
+      btnNext.style.display = isPrizeDone ? 'none' : 'inline-flex';
+
+      const modal = document.getElementById('modal-winner');
+      modal.style.display = 'flex';
+    }
+
+    function closeWinnerModal() {
+      document.getElementById('modal-winner').style.display = 'none';
+      dispensingState = 'idle';
+    }
+
+    function cancelResultAndRedraw(resultId) {
+      const resIndex = appState.results.findIndex(r => r.id === resultId);
+      if (resIndex === -1) return;
+      const targetRes = appState.results[resIndex];
+
+      const confirmMsg = `[${targetRes.prizeName}] 당첨자 ${targetRes.number}번을 현장 부재 처리하고, 바로 다시 뽑으시겠습니까?`;
+      if (!confirm(confirmMsg)) return;
+
+      appState.results.splice(resIndex, 1);
+
+      const prize = appState.prizes.find(p => p.id === targetRes.prizeId);
+      if (prize && prize.drawnCount > 0) {
+        prize.drawnCount--;
+      }
+
+      saveState();
+      closeWinnerModal();
+
+      appState.selectedPrizeId = targetRes.prizeId;
+      switchView('draw');
+
+      setTimeout(() => {
+        triggerDrawSingle();
+      }, 400);
+    }
+
+    function downloadCSV() {
+      if (appState.results.length === 0) {
+        alert('다운로드할 추첨 결과가 없습니다.');
+        return;
+      }
+      const BOM = '\uFEFF';
+      const headers = ['추첨 순서', '당첨 번호', '경품명', '추첨 일시'];
+      const rows = appState.results.map(r => {
+        const dateStr = new Date(r.drawnAt).toLocaleString('ko-KR');
+        return [r.drawOrder, r.number, `"${r.prizeName.replace(/"/g, '""')}"`, `"${dateStr}"`].join(',');
+      });
+      const content = BOM + [headers.join(','), ...rows].join('\r\n');
+      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const today = new Date().toISOString().slice(0, 10);
+      a.download = `추첨결과_${(appState.title || '행사').replace(/\s+/g, '_')}_${today}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initThree();
+      renderSetupView();
+
+      const onRangeInput = () => {
+        appState.startNumber = parseInt(document.getElementById('input-start-num').value) || 0;
+        appState.endNumber = parseInt(document.getElementById('input-end-num').value) || 0;
+        saveState();
+        renderSetupView();
+      };
+      document.getElementById('input-start-num').addEventListener('input', onRangeInput);
+      document.getElementById('input-end-num').addEventListener('input', onRangeInput);
+
+      document.getElementById('input-session-title').addEventListener('input', (e) => {
+        appState.title = e.target.value;
+        saveState();
+      });
+
+      document.getElementById('btn-reset-defaults').onclick = () => {
+        if (confirm('기본 설정(1~170번 및 기본 경품 목록)으로 초기화하시겠습니까?')) {
+          appState = createDefaultState();
+          saveState();
+          renderSetupView();
+        }
+      };
+
+      document.getElementById('btn-add-prize').onclick = () => {
+        const nameInput = document.getElementById('input-new-prize-name');
+        const qtyInput = document.getElementById('input-new-prize-qty');
+        const name = nameInput.value.trim();
+        const qty = parseInt(qtyInput.value) || 1;
+        if (!name || qty < 1) return;
+
+        appState.prizes.push({ id: 'prize_' + Date.now(), name, quantity: qty, drawnCount: 0 });
+        nameInput.value = '';
+        qtyInput.value = 1;
+        saveState();
+        renderSetupView();
+      };
+
+      document.getElementById('list-prizes').addEventListener('click', (e) => {
+        const delId = e.target.getAttribute('data-delete-prize-id');
+        if (delId) {
+          appState.prizes = appState.prizes.filter(p => p.id !== delId);
+          saveState();
+          renderSetupView();
+          return;
+        }
+
+        const drawId = e.target.getAttribute('data-draw-prize-id');
+        if (drawId) {
+          appState.selectedPrizeId = drawId;
+          saveState();
+          switchView('draw');
+          return;
+        }
+      });
+
+      document.getElementById('list-prizes').addEventListener('change', (e) => {
+        const prizeId = e.target.getAttribute('data-prize-id');
+        if (prizeId) {
+          const val = parseInt(e.target.value) || 1;
+          const target = appState.prizes.find(p => p.id === prizeId);
+          if (target) {
+            target.quantity = Math.max(1, val);
+            saveState();
+            renderSetupView();
+          }
+        }
+      });
+
+      document.addEventListener('click', (e) => {
+        const cancelResId = e.target.getAttribute('data-cancel-result-id');
+        if (cancelResId) {
+          cancelResultAndRedraw(cancelResId);
+        }
+      });
+
+      document.getElementById('btn-enter-draw').onclick = () => {
+        const firstUnf = appState.prizes.find(p => p.drawnCount < p.quantity);
+        if (firstUnf) appState.selectedPrizeId = firstUnf.id;
+        saveState();
+        switchView('draw');
+      };
+
+      document.getElementById('btn-back-setup').onclick = () => {
+        if (confirm('설정 화면으로 돌아가시겠습니까? 진행 중인 결과는 안전하게 보존됩니다.')) {
+          switchView('setup');
+        }
+      };
+      document.getElementById('btn-go-results').onclick = () => switchView('results');
+      document.getElementById('btn-results-back-draw').onclick = () => switchView('draw');
+      document.getElementById('btn-results-back-setup').onclick = () => switchView('setup');
+
+      const btnSound = document.getElementById('btn-toggle-sound');
+      btnSound.onclick = () => {
+        const isMuted = soundMgr.toggleMute();
+        btnSound.textContent = isMuted ? '🔇 소리 OFF' : '🔊 소리 ON';
+      };
+
+      document.getElementById('btn-toggle-fs').onclick = () => {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      };
+
+      document.getElementById('btn-modal-close').onclick = closeWinnerModal;
+      document.getElementById('btn-modal-next').onclick = () => {
+        closeWinnerModal();
+        setTimeout(triggerDrawSingle, 350);
+      };
+
+      document.getElementById('btn-modal-redraw').onclick = () => {
+        if (lastWinningResult) {
+          cancelResultAndRedraw(lastWinningResult.id);
+        }
+      };
+
+      document.getElementById('btn-download-csv').onclick = downloadCSV;
+
+      document.getElementById('btn-new-session').onclick = () => {
+        if (confirm('현재 결과를 보존하고 새로운 추첨 행사를 시작하시겠습니까?')) {
+          try {
+            const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            hist.unshift(appState);
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(hist.slice(0, 30)));
+          } catch(e) {}
+
+          appState = createDefaultState();
+          saveState();
+          switchView('setup');
+        }
+      };
+
+      document.getElementById('btn-open-history').onclick = () => {
+        try {
+          const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+          if (hist.length === 0) {
+            alert('저장된 이전 행사 추첨 기록이 없습니다.');
+            return;
+          }
+          let msg = `저장된 이전 행사 목록 (${hist.length}개):\n\n`;
+          hist.forEach((h, i) => {
+            msg += `${i + 1}. [${h.title}] 당첨자: ${h.results.length}명\n`;
+          });
+          msg += '\n가장 최근 행사를 복구하시겠습니까?';
+          if (confirm(msg)) {
+            appState = hist[0];
+            saveState();
+            switchView('setup');
+          }
+        } catch(e) {
+          alert('기록을 불러오지 못했습니다.');
+        }
+      };
+    });
+  </script>
+</body>
+</html>
